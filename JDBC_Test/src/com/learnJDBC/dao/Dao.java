@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.learnJDBC.Model.Godness;
 import com.learnJDBC.db.DBUtil;
@@ -25,19 +26,20 @@ public class Dao {
 		try {
 			Statement statement = connec.createStatement();
 			System.out.println("数据库连接成功");
-			String sql = "insert godness(id,user_name,age) values(?,?,?)";
+			String sql = "insert godness(id,user_name,age) values(?,?,?)"; //? 是占位符
 			PreparedStatement pStatement = connec.prepareStatement(sql);
 			pStatement.setInt(1, g.getId());
-			pStatement.setString(2, g.getUser_name());
+			pStatement.setString(2, g.getUser_name()); //给占位符赋值
 			pStatement.setInt(3, g.getAge());
 			System.out.println("sql："+sql);
-			pStatement.execute();
+			pStatement.execute(); //执行 sql 语句
 			System.out.println("插入成功！");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		
 	}
+	
 	/*根据女神id删除女神*/
 	public void del(int id) {
 		Connection connec = DBUtil.getConnec();
@@ -73,6 +75,7 @@ public class Dao {
 		}
 	}
 	
+	/*查询女神的列表(List集合)*/
 	public List<Godness> query() {
 		Connection connec = DBUtil.getConnec();
 		String sql = "select * from godness";
@@ -95,6 +98,7 @@ public class Dao {
 		return null;
 	}
 	
+	/*根据id查询女神*/
 	public Godness get(int id) {
 		Connection connec = DBUtil.getConnec();
 		String sql = "select * from godness where id=?";
@@ -117,5 +121,35 @@ public class Dao {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	/*使用Map集合自定义查询条件返回女神列表(List集合)*/
+	public List<Godness> query_by_param(List<Map<String, String>> param) {
+		Connection connec = DBUtil.getConnec();
+		String s = "select * from godness where 1 = 1"; //使用where来添加多个查询条件,1=1是个tip  
+		StringBuilder sql = new StringBuilder(s);//使用StringBuilder创建可变字符串
+		List<Godness> godnesses = new ArrayList<Godness>();
+		for (Map<String, String> map : param) {
+			String sql_add = " and " + map.get("name")+" "+map.get("relation")+" "+map.get("value");
+			sql.append(sql_add);
+		}
+		
+		System.out.println("sql语句："+sql.toString());//System.out.println("SQL: "+sql);
+		try {
+			PreparedStatement pStatement = connec.prepareStatement(sql.toString());
+			ResultSet rSet = pStatement.executeQuery();
+			
+			while (rSet.next()) {
+				Godness god = new Godness();
+				god.setId(rSet.getInt("id"));
+				god.setAge(rSet.getInt("age"));
+				god.setUser_name(rSet.getString("user_name"));
+				
+				godnesses.add(god);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return godnesses;
 	}
 }
