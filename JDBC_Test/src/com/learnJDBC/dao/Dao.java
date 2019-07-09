@@ -18,8 +18,7 @@ import com.mysql.cj.exceptions.RSAException;
  * @author Tang
  *
  */
-public class Dao {
-	
+public class Dao {	
 	/*ÃÌº”≈Æ…Ò*/
 	public void add(Godness g){
 		Connection connec = DBUtil.getConnec();
